@@ -1,35 +1,30 @@
 #!/usr/bin/python3
-"""script that starts a Flask web application"""
-
-
-# import Flask class from flask module
-# import render_template for rendering templates to browser
-# fetch data from storage engine
-from flask import Flask, render_template
-
+"""Starts a Flask web application.
+The application listens on 0.0.0.0, port 5000.
+Routes:
+    /hbnb_filters: HBnB HTML filters page.
+"""
 from models import storage
+from flask import Flask
+from flask import render_template
 
-# create an instance called app of the class by passong the __name__ variable
 app = Flask(__name__)
-app.url_map.strict_slashes = False
 
 
-@app.teardown_appcontext
-def teardown_db(exception=None):
-    """removes the current SQLAlchemy Session
-    """
-    if storage is not None:
-        storage.close()
-
-
-@app.route('/hbnb_filters')
-def hbnb_filters(id=None):
-    """displays a HTML page: inside the tag BODY"""
-    states = storage.all("State").values()
-    amenities = storage.all("Amenity").values()
-    return render_template('10-hbnb_filters.html',
+@app.route("/hbnb_filters", strict_slashes=False)
+def hbnb_filters():
+    """Displays the main HBnB filters HTML page."""
+    states = storage.all("State")
+    amenities = storage.all("Amenity")
+    return render_template("10-hbnb_filters.html",
                            states=states, amenities=amenities)
 
 
-if __name__ == '__main__':
-    app.run(debug=True)
+@app.teardown_appcontext
+def teardown(exc):
+    """Remove the current SQLAlchemy session."""
+    storage.close()
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0")

@@ -1,33 +1,30 @@
 #!/usr/bin/python3
-"""script that starts a Flask web application"""
-
-
-# import Flask class from flask module
-# import render_template for rendering templates to browser
-# fetch data from storage engine
-from flask import Flask, render_template
-
+"""Starts a Flask web application.
+The application listens on 0.0.0.0, port 5000.
+Routes:
+    /states_list: HTML page with a list of all State objects in DBStorage.
+"""
 from models import storage
+from flask import Flask
+from flask import render_template
 
-# create an instance called app of the class by passong the __name__ variable
 app = Flask(__name__)
-app.url_map.strict_slashes = False
+
+
+@app.route("/states_list", strict_slashes=False)
+def states_list():
+    """Displays an HTML page with a list of all State objects in DBStorage.
+    States are sorted by name.
+    """
+    states = storage.all("State")
+    return render_template("7-states_list.html", states=states)
 
 
 @app.teardown_appcontext
-def teardown_db(exception=None):
-    """removes the current SQLAlchemy Session
-    """
-    if storage is not None:
-        storage.close()
+def teardown(exc):
+    """Remove the current SQLAlchemy session."""
+    storage.close()
 
 
-@app.route('/states_list')
-def states_list(n=None):
-    """displays a HTML page: inside the tag BODY"""
-    states = storage.all('State')
-    return render_template('7-states_list.html', states=states)
-
-
-if __name__ == '__main__':
-    app.run(debug=True)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0")
